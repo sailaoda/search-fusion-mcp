@@ -1,0 +1,28 @@
+# Include additional files in the distribution package
+
+# Documentation files
+include README.md
+include README_zh.md
+include LICENSE
+include RELEASE_CHECKLIST.md
+
+# Configuration files
+include requirements.txt
+include pyproject.toml
+
+# Source code files
+recursive-include src *.py
+
+# Exclude unnecessary files
+exclude .gitignore
+exclude Dockerfile
+exclude .dockerignore
+exclude build.py
+exclude test_mcp.py
+recursive-exclude tests *
+recursive-exclude .git *
+recursive-exclude __pycache__ *
+recursive-exclude *.pyc
+recursive-exclude *.pyo
+recursive-exclude *.egg-info *
+global-exclude *.log

@@ -1,0 +1,24 @@
+# Core MCP and server dependencies
+mcp>=1.0.0
+fastmcp>=0.1.0
+
+# HTTP and async client
+httpx>=0.24.1
+
+# Data validation and configuration
+pydantic>=2.0.0
+
+# Logging and utilities
+loguru>=0.7.0
+
+# Search engines
+duckduckgo-search>=6.1.7
+exa-py>=1.0.0
+wikipedia>=1.4.0
+
+# Web scraping and content processing
+beautifulsoup4>=4.12.2
+
+# Development and testing (optional)
+pytest>=7.4.3
+pytest-asyncio>=0.21.1
