@@ -257,18 +257,6 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
-## 📦 Docker Deployment
-```bash
-# Build image
-docker build -t search-fusion-mcp .
-
-# Run container
-docker run -p 8000:8000 \
-  -e GOOGLE_API_KEY=your_key \
-  -e GOOGLE_CSE_ID=your_cse_id \
-  search-fusion-mcp
-```
-
 ## 🔧 Configuration Guide
 
 For detailed configuration instructions, see [MCP_CONFIG_GUIDE.md](MCP_CONFIG_GUIDE.md).
@@ -278,7 +266,7 @@ For detailed configuration instructions, see [MCP_CONFIG_GUIDE.md](MCP_CONFIG_GU
 - **Latency**: Sub-second response times with caching
 - **Availability**: 99.9% uptime with intelligent failover
 - **Throughput**: Handles concurrent requests efficiently
-- **Scalability**: Horizontal scaling support via Docker
+- **Scalability**: Efficient resource utilization and concurrent processing
 
 ## 🤝 Contributing
 

@@ -257,18 +257,6 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
-## 📦 Docker部署
-```bash
-# 构建镜像
-docker build -t search-fusion-mcp .
-
-# 运行容器
-docker run -p 8000:8000 \
-  -e GOOGLE_API_KEY=your_key \
-  -e GOOGLE_CSE_ID=your_cse_id \
-  search-fusion-mcp
-```
-
 ## 🔧 配置指南
 
 详细配置说明请参见 [MCP_CONFIG_GUIDE.md](MCP_CONFIG_GUIDE.md)。
@@ -278,7 +266,7 @@ docker run -p 8000:8000 \
 - **延迟**：缓存下毫秒级响应时间
 - **可用性**：智能故障转移保证99.9%正常运行时间
 - **吞吐量**：高效处理并发请求
-- **可扩展性**：通过Docker支持水平扩展
+- **可扩展性**：高效的资源利用和并发处理
 
 ## 🤝 贡献
 
