@@ -28,6 +28,7 @@ A **High-Availability Multi-Engine Search Aggregation MCP Server** providing int
 - **Wikipedia Integration** - Dedicated Wikipedia search tool
 - **Wayback Machine** - Historical webpage archive search
 - **Environment Variable Configuration** - Pure MCP configuration without config files
+- **🌐 Enhanced Proxy Auto-Detection** - Intelligent proxy detection with zero configuration
 
 ### 📊 Monitoring & Analytics
 - Real-time engine status monitoring
@@ -69,7 +70,55 @@ cd search-fusion-mcp
 pip install -e .
 ```
 
+## 🌐 Enhanced Proxy Auto-Detection (New in v2.0!)
 
+Search Fusion now features **intelligent proxy auto-detection** inspired by [concurrent-browser-mcp](https://github.com/sailaoda/concurrent-browser-mcp), providing seamless proxy support with **zero configuration**!
+
+### ✨ Three-Layer Detection Strategy
+
+1. **Environment Variables** - Highest priority, checks `HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`
+2. **Port Scanning** - Scans common proxy ports using socket connection testing
+3. **System Proxy** - Detects OS-level proxy settings (macOS supported)
+
+### 🔍 Supported Proxy Ports (Priority Order)
+- **7890** - Clash default port
+- **1087** - V2Ray common port  
+- **8080** - Generic HTTP proxy port
+- **3128** - Squid proxy default port
+- **8888** - Other proxy software port
+- **10809** - V2Ray SOCKS port
+- **20171** - Additional proxy port
+
+### 🚀 Zero Configuration Usage
+
+**Just run directly** - proxy will be auto-detected:
+```bash
+search-fusion-mcp
+```
+
+**Manual override** (if needed):
+```bash
+env HTTP_PROXY="http://your-proxy:port" search-fusion-mcp
+```
+
+### 📊 Detection Process
+```
+🔍 Checking environment variables...
+🔍 Scanning proxy ports: [7890, 1087, 8080, ...]
+✅ Local proxy port detected: 7890
+🌐 Auto-detected proxy: http://127.0.0.1:7890
+```
+
+### 🆚 Comparison with concurrent-browser-mcp
+
+| Feature | Search-Fusion | concurrent-browser-mcp |
+|---------|---------------|------------------------|
+| **Detection Method** | ✅ Env vars → Port scan → System proxy | ✅ Same strategy |
+| **Port List** | ✅ 7 common ports | ✅ 7 common ports |
+| **Connection Test** | ✅ Socket testing | ✅ Socket testing |
+| **Timeout** | ✅ 3 seconds | ✅ 3 seconds |
+| **macOS Support** | ✅ networksetup | ✅ networksetup |
+| **Language** | Python | TypeScript |
 
 ### MCP Integration
 

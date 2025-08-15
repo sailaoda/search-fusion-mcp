@@ -175,9 +175,20 @@ class SearchFusionServer:
             if not await self._ensure_search_manager():
                 return self._error_response("Search manager unavailable, please try again later", query, engine)
             
-            # Execute search
+            # Execute search with timeout handling
             start_time = time.time()
-            results = await self.search_manager.search(query, num_results, engine)
+            logger.info(f"🔍 Starting search: query='{query}', engine='{engine}', num_results={num_results}")
+            
+            try:
+                results = await asyncio.wait_for(
+                    self.search_manager.search(query, num_results, engine),
+                    timeout=60.0  # 60 second timeout
+                )
+            except asyncio.TimeoutError:
+                elapsed_time = time.time() - start_time
+                logger.error(f"⏰ Search timeout after {elapsed_time:.1f}s: query='{query}', engine='{engine}'")
+                return self._error_response("Search operation timed out", query, engine)
+            
             elapsed_time = time.time() - start_time
             
             # Format response
@@ -218,14 +229,27 @@ class SearchFusionServer:
             logger.info(f"🔍 Starting web fetch: {url} (page {page_number})")
             start_time = time.time()
             
-            # Use web fetcher
-            result = await self.web_fetcher.fetch_url(
-                url=url,
-                use_jina=use_jina,
-                with_image_alt=with_image_alt,
-                max_length=max_length,
-                page_number=page_number
-            )
+            try:
+                # Use web fetcher with timeout
+                result = await asyncio.wait_for(
+                    self.web_fetcher.fetch_url(
+                        url=url,
+                        use_jina=use_jina,
+                        with_image_alt=with_image_alt,
+                        max_length=max_length,
+                        page_number=page_number
+                    ),
+                    timeout=90.0  # 90 second timeout for web fetching
+                )
+            except asyncio.TimeoutError:
+                elapsed_time = time.time() - start_time
+                logger.error(f"⏰ Web fetch timeout after {elapsed_time:.1f}s: {url}")
+                return json.dumps({
+                    "success": False,
+                    "error": "Web fetch operation timed out",
+                    "url": url,
+                    "timestamp": datetime.now().isoformat()
+                }, ensure_ascii=False, indent=2)
             
             elapsed_time = time.time() - start_time
             result['time_ms'] = int(elapsed_time * 1000)
@@ -474,14 +498,24 @@ class SearchFusionServer:
     
     def _error_response(self, error_msg: str, query: str = "", engine: str = "") -> str:
         """Generate unified error response"""
-        return json.dumps({
+        error_response = {
             "error": error_msg,
             "query": query,
             "engine": engine,
             "suggestion": "Please try again later, or try using other search engines",
             "timestamp": datetime.now().isoformat(),
-            "success": False
-        }, ensure_ascii=False, indent=2)
+            "success": False,
+            "server_info": {
+                "version": "1.0.0",
+                "encoding": "utf-8",
+                "ensure_ascii": False
+            }
+        }
+        
+        # Log the error for debugging
+        logger.error(f"🚨 Error response generated: {error_msg} (query: '{query}', engine: '{engine}')")
+        
+        return json.dumps(error_response, ensure_ascii=False, indent=2)
     
     def run(self):
         """Start the server"""

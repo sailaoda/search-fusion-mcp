@@ -28,6 +28,7 @@
 - **Wikipedia集成** - 专用Wikipedia搜索工具
 - **Wayback Machine** - 历史网页存档搜索
 - **环境变量配置** - 纯MCP配置，无需配置文件
+- **🌐 增强代理自动检测** - 智能代理检测，零配置使用
 
 ### 📊 监控和分析
 - 实时引擎状态监控
@@ -69,7 +70,55 @@ cd search-fusion-mcp
 pip install -e .
 ```
 
+## 🌐 增强代理自动检测 (v2.0新功能!)
 
+Search Fusion 现在具备了**智能代理自动检测**功能，参考了 [concurrent-browser-mcp](https://github.com/sailaoda/concurrent-browser-mcp) 的实现，提供**零配置**的无缝代理支持！
+
+### ✨ 三层检测策略
+
+1. **环境变量检测** - 最高优先级，检查 `HTTP_PROXY`、`HTTPS_PROXY`、`ALL_PROXY`
+2. **端口扫描检测** - 使用socket连接测试扫描常见代理端口
+3. **系统代理检测** - 检测操作系统级别的代理设置（支持macOS）
+
+### 🔍 支持的代理端口（按优先级排序）
+- **7890** - Clash默认端口
+- **1087** - V2Ray常用端口
+- **8080** - 通用HTTP代理端口
+- **3128** - Squid代理默认端口
+- **8888** - 其他代理软件端口
+- **10809** - V2Ray SOCKS端口
+- **20171** - 其他代理端口
+
+### 🚀 零配置使用
+
+**直接运行** - 代理将被自动检测：
+```bash
+search-fusion-mcp
+```
+
+**手动覆盖**（如需要）：
+```bash
+env HTTP_PROXY="http://your-proxy:port" search-fusion-mcp
+```
+
+### 📊 检测过程
+```
+🔍 检查环境变量...
+🔍 扫描代理端口: [7890, 1087, 8080, ...]
+✅ 检测到本地代理端口: 7890
+🌐 自动检测到代理: http://127.0.0.1:7890
+```
+
+### 🆚 与concurrent-browser-mcp对比
+
+| 功能特性 | Search-Fusion | concurrent-browser-mcp |
+|---------|---------------|------------------------|
+| **检测方法** | ✅ 环境变量 → 端口扫描 → 系统代理 | ✅ 相同策略 |
+| **端口列表** | ✅ 7个常见端口 | ✅ 7个常见端口 |
+| **连接测试** | ✅ Socket测试 | ✅ Socket测试 |
+| **超时设置** | ✅ 3秒 | ✅ 3秒 |
+| **macOS支持** | ✅ networksetup | ✅ networksetup |
+| **实现语言** | Python | TypeScript |
 
 ### MCP集成
 
