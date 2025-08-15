@@ -74,7 +74,7 @@ class ConfigManager:
         # Load from environment variables and MCP configuration only
         self._load_from_env()
         
-        # Auto-detect and setup proxy (参考concurrent-browser-mcp的实现)
+        # Auto-detect and setup proxy (inspired by concurrent-browser-mcp implementation)
         self._auto_detect_proxy()
         
         # Setup proxy environment variables
@@ -91,7 +91,7 @@ class ConfigManager:
         self.config.log_file = os.getenv('LOG_FILE', self.config.log_file)
         self.config.log_rotation = os.getenv('LOG_ROTATION', self.config.log_rotation)
         
-        # Proxy configuration - 优先使用环境变量中的设置
+        # Proxy configuration - prioritize environment variables
         self.config.http_proxy = os.getenv('HTTP_PROXY') or os.getenv('http_proxy')
         self.config.https_proxy = os.getenv('HTTPS_PROXY') or os.getenv('https_proxy')
         self.config.no_proxy = os.getenv('NO_PROXY') or os.getenv('no_proxy', self.config.no_proxy)
@@ -151,14 +151,14 @@ class ConfigManager:
             )
     
     def _auto_detect_proxy(self):
-        """自动检测系统代理设置 - 参考concurrent-browser-mcp实现"""
+        """Auto-detect system proxy settings - inspired by concurrent-browser-mcp implementation"""
         try:
-            # 如果环境变量中已经有代理设置，则不进行自动检测
+            # If environment variables already have proxy settings, skip auto-detection
             if self.config.http_proxy or self.config.https_proxy:
                 logger.info("🌐 Using proxy from environment variables")
                 return
             
-            # 按照concurrent-browser-mcp的顺序进行检测
+            # Follow concurrent-browser-mcp detection order
             detected_proxy = self._detect_local_proxy()
             
             if detected_proxy:
@@ -172,15 +172,15 @@ class ConfigManager:
             logger.warning(f"⚠️ Failed to auto-detect proxy: {e}")
     
     def _detect_local_proxy(self) -> Optional[str]:
-        """检测本地代理 - 完全参考concurrent-browser-mcp的实现"""
+        """Detect local proxy - fully inspired by concurrent-browser-mcp implementation"""
         
-        # 1. 检查环境变量
+        # 1. Check environment variables
         env_proxy = self._get_proxy_from_env()
         if env_proxy:
             logger.info(f"Proxy detected from environment variables: {env_proxy}")
             return env_proxy
         
-        # 2. 检查常见代理端口 - 这是关键！
+        # 2. Check common proxy ports - this is the key feature!
         common_ports = [7890, 1087, 8080, 3128, 8888, 10809, 20171]
         for port in common_ports:
             proxy_url = f"http://127.0.0.1:{port}"
@@ -188,7 +188,7 @@ class ConfigManager:
                 logger.info(f"Local proxy port detected: {port}")
                 return proxy_url
         
-        # 3. 尝试检测系统代理设置 (macOS)
+        # 3. Try to detect system proxy settings (macOS)
         if platform.system().lower() == 'darwin':
             system_proxy = self._get_macos_system_proxy()
             if system_proxy:
@@ -198,7 +198,7 @@ class ConfigManager:
         return None
     
     def _get_proxy_from_env(self) -> Optional[str]:
-        """从环境变量获取代理"""
+        """Get proxy from environment variables"""
         http_proxy = os.getenv('HTTP_PROXY') or os.getenv('http_proxy')
         https_proxy = os.getenv('HTTPS_PROXY') or os.getenv('https_proxy')
         all_proxy = os.getenv('ALL_PROXY') or os.getenv('all_proxy')
@@ -206,19 +206,19 @@ class ConfigManager:
         return http_proxy or https_proxy or all_proxy
     
     def _test_proxy_connection(self, proxy_url: str) -> bool:
-        """测试代理连接 - 完全参考concurrent-browser-mcp的实现"""
+        """Test proxy connection - fully inspired by concurrent-browser-mcp implementation"""
         try:
-            # 简单的端口检测，避免复杂的网络请求
+            # Simple port detection to avoid complex network requests
             from urllib.parse import urlparse
             parsed = urlparse(proxy_url)
             
-            # 创建socket连接测试
+            # Create socket connection test
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(3)  # 3秒超时，和concurrent-browser-mcp一致
+            sock.settimeout(3)  # 3-second timeout, consistent with concurrent-browser-mcp
             
             try:
                 result = sock.connect_ex((parsed.hostname, parsed.port))
-                return result == 0  # 0表示连接成功
+                return result == 0  # 0 means connection successful
             finally:
                 sock.close()
                 
@@ -226,15 +226,15 @@ class ConfigManager:
             return False
     
     def _get_macos_system_proxy(self) -> Optional[str]:
-        """获取macOS系统代理设置 - 参考concurrent-browser-mcp实现"""
+        """Get macOS system proxy settings - inspired by concurrent-browser-mcp implementation"""
         try:
-            # 使用和concurrent-browser-mcp相同的命令
+            # Use the same command as concurrent-browser-mcp
             result = subprocess.run([
                 'networksetup', '-getwebproxy', 'Wi-Fi'
             ], capture_output=True, text=True, timeout=5)
             
             if result.returncode != 0:
-                # 尝试以太网
+                # Try Ethernet
                 result = subprocess.run([
                     'networksetup', '-getwebproxy', 'Ethernet'
                 ], capture_output=True, text=True, timeout=5)
