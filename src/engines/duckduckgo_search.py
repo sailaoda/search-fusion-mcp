@@ -55,7 +55,7 @@ class DuckDuckGoSearch(SearchEngine):
                         source="duckduckgo"
                     ))
             
-            self.record_success()
+            await self.record_success()
             logger.info(f"DuckDuckGo search successful: {query} ({len(results)} results)")
             
             return results
@@ -64,9 +64,9 @@ class DuckDuckGoSearch(SearchEngine):
             error_str = str(e).lower()
             # Check if this is a rate limiting error
             if "rate" in error_str or "limit" in error_str or "429" in error_str:
-                self.record_error(is_rate_limit=True)
+                await self.record_error(is_rate_limit=True)
                 logger.error(f"DuckDuckGo search rate limit error: {str(e)}")
             else:
-                self.record_error()
+                await self.record_error()
                 logger.error(f"DuckDuckGo search failed: {str(e)}")
             return []

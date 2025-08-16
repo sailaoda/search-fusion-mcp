@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "search-fusion-mcp"
-version = "2.1.0"
+version = "3.0.0"
 description = "🔍 High-Availability Multi-Engine Search Aggregation MCP Server with Enhanced Proxy Auto-Detection"
 readme = "README.md"
 license = {file = "LICENSE"}

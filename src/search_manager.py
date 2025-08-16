@@ -6,6 +6,7 @@ Search Manager - Manages multiple search engines with priority-based failover
 
 from typing import List, Optional, Dict, Any
 import time
+import asyncio
 from loguru import logger
 from datetime import datetime
 
@@ -193,15 +194,15 @@ class SearchManager:
         
         return None
     
-    def get_available_engines(self) -> List[Dict[str, Any]]:
-        """Get list of available engines with their status"""
+    async def get_available_engines(self) -> List[Dict[str, Any]]:
+        """Get list of available engines with their status (thread-safe)"""
         engine_list = []
         
-        for engine in self.engines:
-            engine_info = engine.get_status()
-            engine_list.append(engine_info)
+        # Gather all status info concurrently for better performance
+        tasks = [engine.get_status() for engine in self.engines]
+        engine_statuses = await asyncio.gather(*tasks)
         
-        return engine_list
+        return engine_statuses
     
     def get_search_stats(self) -> Dict[str, Any]:
         """Get search manager statistics"""

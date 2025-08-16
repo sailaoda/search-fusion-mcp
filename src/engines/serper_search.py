@@ -103,7 +103,7 @@ class SerperSearch(SearchEngine):
                         source="serper"
                     ))
             
-            self.record_success()
+            await self.record_success()
             logger.info(f"Serper search successful: {query} ({len(results)} results)")
             
             return results[:num_results]
@@ -112,9 +112,9 @@ class SerperSearch(SearchEngine):
             error_str = str(e).lower()
             # Check for rate limiting errors
             if "rate" in error_str or "limit" in error_str or "429" in error_str or "quota" in error_str:
-                self.record_error(is_rate_limit=True)
+                await self.record_error(is_rate_limit=True)
                 logger.error(f"Serper search rate limit error: {str(e)}")
             else:
-                self.record_error()
+                await self.record_error()
                 logger.error(f"Serper search failed: {str(e)}")
             return []

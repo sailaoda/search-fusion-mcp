@@ -39,7 +39,7 @@ class BaiduSearch(SearchEngine):
             # Simplified implementation - would need proper Baidu API integration
             results = []
             
-            self.record_success()
+            await self.record_success()
             logger.info(f"Baidu search successful: {query} ({len(results)} results)")
             
             return results
@@ -47,9 +47,9 @@ class BaiduSearch(SearchEngine):
         except Exception as e:
             error_str = str(e).lower()
             if "rate" in error_str or "limit" in error_str or "429" in error_str or "quota" in error_str:
-                self.record_error(is_rate_limit=True)
+                await self.record_error(is_rate_limit=True)
                 logger.error(f"Baidu search rate limit error: {str(e)}")
             else:
-                self.record_error()
+                await self.record_error()
                 logger.error(f"Baidu search failed: {str(e)}")
             return []

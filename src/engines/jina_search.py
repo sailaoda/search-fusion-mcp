@@ -60,7 +60,7 @@ class JinaSearch(SearchEngine):
                         source="jina"
                     ))
             
-            self.record_success()
+            await self.record_success()
             logger.info(f"Jina search successful: {query} ({len(results)} results)")
             
             return results
@@ -68,10 +68,10 @@ class JinaSearch(SearchEngine):
         except Exception as e:
             error_str = str(e).lower()
             if "rate" in error_str or "limit" in error_str or "429" in error_str or "quota" in error_str:
-                self.record_error(is_rate_limit=True)
+                await self.record_error(is_rate_limit=True)
                 logger.error(f"Jina search rate limit error: {str(e)}")
             else:
-                self.record_error()
+                await self.record_error()
                 logger.error(f"Jina search failed: {str(e)}")
             return []
     

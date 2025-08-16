@@ -74,7 +74,7 @@ class GoogleSearch(SearchEngine):
                 results.append(result)
                 logger.info(f"Added result: {title}")
             
-            self.record_success()
+            await self.record_success()
             logger.info(f"Google search successful: {query} ({len(results)} results)")
             
             return results
@@ -83,9 +83,9 @@ class GoogleSearch(SearchEngine):
             error_str = str(e).lower()
             # Check for rate limiting errors
             if "quota" in error_str or "rate" in error_str or "limit" in error_str or "429" in error_str:
-                self.record_error(is_rate_limit=True)
+                await self.record_error(is_rate_limit=True)
                 logger.error(f"Google search rate limit error: {str(e)}")
             else:
-                self.record_error()
+                await self.record_error()
                 logger.error(f"Google search failed: {str(e)}")
             return []

@@ -47,6 +47,10 @@ class SearchFusionServer:
         self.last_init_attempt = 0
         self.init_cooldown = 30
         
+        # Concurrency control
+        self._init_lock = asyncio.Lock()
+        self._search_semaphore = asyncio.Semaphore(10)  # Limit concurrent searches
+        
         # Create MCP server
         self.mcp = FastMCP("Search-Fusion")
         self._register_tools()
@@ -146,83 +150,36 @@ class SearchFusionServer:
         logger.info("✅ All MCP tools registered successfully")
     
     async def _ensure_search_manager(self) -> bool:
-        """Ensure search manager is initialized"""
+        """Ensure search manager is initialized (thread-safe)"""
+        # Quick check without lock for performance
         if self.search_manager is not None:
             return True
         
-        # Check cooldown
-        current_time = time.time()
-        if current_time - self.last_init_attempt < self.init_cooldown:
-            logger.warning(f"⏳ Search manager initialization in cooldown, {self.init_cooldown - (current_time - self.last_init_attempt):.0f}s remaining")
-            return False
-        
-        self.last_init_attempt = current_time
-        
-        try:
-            logger.info("🔄 Initializing search manager...")
-            self.search_manager = SearchManager()
-            logger.success("✅ Search manager initialized successfully")
-            return True
-        except Exception as e:
-            logger.error(f"❌ Search manager initialization failed: {e}")
-            self.search_manager = None
-            return False
-    
-    async def _handle_search(self, query: str, num_results: int, engine: str) -> str:
-        """Handle search requests"""
-        try:
-            # Ensure search manager is available
-            if not await self._ensure_search_manager():
-                return self._error_response("Search manager unavailable, please try again later", query, engine)
+        # Use lock for initialization to prevent race conditions
+        async with self._init_lock:
+            # Double-check after acquiring lock
+            if self.search_manager is not None:
+                return True
             
-            # Execute search with timeout handling
-            start_time = time.time()
-            logger.info(f"🔍 Starting search: query='{query}', engine='{engine}', num_results={num_results}")
+            # Check cooldown
+            current_time = time.time()
+            if current_time - self.last_init_attempt < self.init_cooldown:
+                logger.warning(f"⏳ Search manager initialization in cooldown, {self.init_cooldown - (current_time - self.last_init_attempt):.0f}s remaining")
+                return False
+            
+            self.last_init_attempt = current_time
             
             try:
-                results = await asyncio.wait_for(
-                    self.search_manager.search(query, num_results, engine),
-                    timeout=60.0  # 60 second timeout
-                )
-            except asyncio.TimeoutError:
-                elapsed_time = time.time() - start_time
-                logger.error(f"⏰ Search timeout after {elapsed_time:.1f}s: query='{query}', engine='{engine}'")
-                return self._error_response("Search operation timed out", query, engine)
-            
-            elapsed_time = time.time() - start_time
-            
-            # Format response
-            response = {
-                "query": query,
-                "engine": engine,
-                "time_ms": int(elapsed_time * 1000),
-                "num_results": len(results),
-                "results": [
-                    {
-                        "title": result.title,
-                        "link": result.link,
-                        "snippet": result.snippet,
-                        "source": result.source,
-                        "metadata": result.metadata
-                    }
-                    for result in results
-                ],
-                "timestamp": datetime.now().isoformat(),
-                "success": True
-            }
-            
-            if results:
-                logger.success(f"🎯 Search successful: '{query}' ({len(results)} results, {elapsed_time*1000:.0f}ms)")
-            else:
-                logger.warning(f"⚠️ Search returned no results: '{query}'")
-                response["message"] = "No results found, try different keywords or search engines"
-            
-            return json.dumps(response, ensure_ascii=False, indent=2)
-            
-        except Exception as e:
-            logger.exception(f"❌ Search error: {e}")
-            return self._error_response(f"Search failed: {str(e)}", query, engine)
+                logger.info("🔄 Initializing search manager...")
+                self.search_manager = SearchManager()
+                logger.success("✅ Search manager initialized successfully")
+                return True
+            except Exception as e:
+                logger.error(f"❌ Search manager initialization failed: {e}")
+                self.search_manager = None
+                return False
     
+     
     async def _handle_fetch_url(self, url: str, use_jina: bool, with_image_alt: bool, max_length: int, page_number: int) -> str:
         """Handle URL fetching requests with intelligent pagination support"""
         try:
@@ -286,7 +243,7 @@ class SearchFusionServer:
                     "timestamp": datetime.now().isoformat()
                 }, ensure_ascii=False, indent=2)
             
-            engines = self.search_manager.get_available_engines()
+            engines = await self.search_manager.get_available_engines()
             stats = self.search_manager.get_search_stats()
             
             response = {

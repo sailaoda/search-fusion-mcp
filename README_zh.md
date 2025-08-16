@@ -3,10 +3,14 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![FastMCP](https://img.shields.io/badge/MCP-FastMCP-green.svg)](https://github.com/jlowin/fastmcp)
+[![Version](https://img.shields.io/badge/version-3.0.0-brightgreen.svg)](https://github.com/sailaoda/search-fusion-mcp/releases)
+[![Concurrency](https://img.shields.io/badge/并发支持-已支持-blue.svg)](https://github.com/sailaoda/search-fusion-mcp)
 
 **🌎 [English Documentation](README.md)**
 
 一个**高可用多引擎搜索聚合 MCP 服务器**，提供智能故障转移、统一API和LLM优化内容处理。Search Fusion 集成了多个搜索引擎，具有智能优先级路由和自动故障转移机制。
+
+> **🆕 v3.0.0 重大更新：** 全面的并发升级！增强的多线程支持，包括线程安全操作、智能连接池管理和基于信号量的请求限制。现在支持50+并发搜索而无竞态条件或数据损坏！
 
 ## ✨ 功能特性
 
@@ -24,6 +28,8 @@
 - **基于优先级的路由** - 基于可用性和性能的智能引擎选择
 - **统一响应格式** - 所有引擎的一致JSON结构
 - **限速保护** - 内置冷却机制
+- **🔄 高并发支持** - 线程安全操作和连接池管理
+- **⚡ 性能优化** - 异步操作和信号量并发控制
 - **LLM优化内容** - 高级网页内容抓取，支持分页
 - **Wikipedia集成** - 专用Wikipedia搜索工具
 - **Wayback Machine** - 历史网页存档搜索
@@ -35,6 +41,14 @@
 - 成功率跟踪
 - 错误处理和恢复
 - 性能指标
+
+### ⚡ 并发性能
+- **线程安全操作** - 所有引擎统计和状态更新都受异步锁保护
+- **连接池管理** - 共享HTTP客户端，可配置连接限制（最大100个连接）
+- **信号量控制** - 并发请求限制（最多10个同时搜索）
+- **超时保护** - 60秒搜索超时防止请求堆积
+- **资源管理** - 高效内存使用，自动连接清理
+- **竞态条件防护** - SearchManager初始化的双重检查锁定
 
 ## 🏗️ 架构
 
