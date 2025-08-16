@@ -320,18 +320,25 @@ class SearchFusionServer:
             }, ensure_ascii=False, indent=2)
     
     async def _handle_wikipedia_search(self, entity: str, first_sentences: int) -> str:
-        """Handle Wikipedia search requests"""
+        """Handle Wikipedia search requests with async optimization"""
         try:
-            # Try to get Wikipedia page
-            page = wikipedia.page(title=entity, auto_suggest=False)
+            # Use async wrapper for synchronous Wikipedia operations
+            page = await asyncio.to_thread(self._get_wikipedia_page, entity)
             
             result_parts = [f"Page Title: {page.title}"]
             
             if first_sentences > 0:
                 try:
-                    summary = wikipedia.summary(entity, sentences=first_sentences, auto_suggest=False)
+                    # Get summary using async wrapper
+                    summary = await asyncio.to_thread(
+                        wikipedia.summary, 
+                        entity, 
+                        sentences=first_sentences, 
+                        auto_suggest=False
+                    )
                     result_parts.append(f"First {first_sentences} sentences summary: {summary}")
                 except Exception:
+                    # Fallback to content splitting
                     content_sentences = page.content.split(". ")[:first_sentences]
                     summary = ". ".join(content_sentences) + "." if content_sentences else page.content[:5000] + "..."
                     result_parts.append(f"First {first_sentences} sentences summary: {summary}")
@@ -373,7 +380,8 @@ class SearchFusionServer:
             
         except wikipedia.exceptions.PageError:
             try:
-                search_results = wikipedia.search(entity, results=5)
+                # Use async wrapper for search
+                search_results = await asyncio.to_thread(wikipedia.search, entity, results=5)
                 if search_results:
                     suggestion_list = "\n".join([f"- {result}" for result in search_results[:5]])
                     content = (
@@ -407,6 +415,10 @@ class SearchFusionServer:
         except Exception as e:
             logger.error(f"❌ Wikipedia search error: {e}")
             return self._error_response(f"Wikipedia search failed: {str(e)}", entity, "wikipedia")
+    
+    def _get_wikipedia_page(self, entity: str):
+        """Synchronous helper method for getting Wikipedia page"""
+        return wikipedia.page(title=entity, auto_suggest=False)
     
     async def _handle_wayback_search(self, url: str, year: int, month: int, day: int) -> str:
         """Handle Wayback Machine search requests"""
