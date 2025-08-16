@@ -45,7 +45,7 @@ A **High-Availability Multi-Engine Search Aggregation MCP Server** providing int
 ### ⚡ Concurrency & Performance
 - **Thread-Safe Operations** - All engine statistics and state updates are protected by async locks
 - **Connection Pooling** - Shared HTTP client with configurable connection limits (max 100 connections)
-- **Semaphore Control** - Concurrent request limiting (max 10 simultaneous searches)
+- **Semaphore Control** - Concurrent request limiting (max 30 simultaneous searches)
 - **Timeout Protection** - 60-second search timeout prevents request accumulation
 - **Resource Management** - Efficient memory usage with automatic connection cleanup
 - **Race Condition Prevention** - Double-checked locking for SearchManager initialization
@@ -59,7 +59,7 @@ Search Fusion MCP Server
 ├── ⚡ Concurrency Layer        # Thread-safe operations & performance optimization
 │   ├── AsyncLock Protection    # Thread-safe state updates
 │   ├── HTTP Connection Pool    # Shared client with connection limits
-│   ├── Semaphore Control      # Concurrent request limiting (max 10)
+│   ├── Semaphore Control      # Concurrent request limiting (max 30)
 │   └── Timeout Management     # 60s timeout protection
 ├── 🚀 Engine Implementations   # Individual search engines
 │   ├── GoogleSearch            # Google Custom Search

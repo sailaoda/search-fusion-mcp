@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.2] - 2025-08-17
+
+### 🔧 Performance Enhancement
+
+**Improved Concurrency:**
+- **Increased Semaphore Limit**: Raised concurrent search limit from 10 to 30 simultaneous searches
+- **Better Throughput**: Enhanced performance for high-load scenarios
+- **Maintained Stability**: All thread-safety and resource management features preserved
+
+**Technical Details:**
+- Updated `_search_semaphore` from `asyncio.Semaphore(10)` to `asyncio.Semaphore(30)`
+- No breaking changes - fully backward compatible with v3.0.x
+- Documentation updated to reflect new concurrency limits
+
+## [3.0.1] - 2025-08-17
+
+### 🔧 Critical Hotfix
+
+**Bug Fixes:**
+- **Restored Missing Method**: Fixed `'SearchFusionServer' object has no attribute '_handle_search'` error
+- **Search Functionality**: Restored full search functionality that was accidentally removed in v3.0.0
+- **Concurrency Integration**: Added proper semaphore control to the restored search handler
+
+**Technical Details:**
+- Re-implemented `_handle_search()` method with enhanced concurrency control
+- Maintained all v3.0.0 thread-safety and performance improvements
+- Added timeout protection and error handling
+
 ## [3.0.0] - 2025-08-17
 
 ### 🚀 Major Feature - High Concurrency Support

@@ -49,7 +49,7 @@ class SearchFusionServer:
         
         # Concurrency control
         self._init_lock = asyncio.Lock()
-        self._search_semaphore = asyncio.Semaphore(10)  # Limit concurrent searches
+        self._search_semaphore = asyncio.Semaphore(30)  # Limit concurrent searches
         
         # Create MCP server
         self.mcp = FastMCP("Search-Fusion")
