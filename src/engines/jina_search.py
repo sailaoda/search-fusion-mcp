@@ -4,7 +4,7 @@
 Jina AI search implementation
 """
 
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from loguru import logger
 from src.engines.base import SearchEngine, SearchResult
 
@@ -26,7 +26,9 @@ class JinaSearch(SearchEngine):
         logger.info("Jina search engine initialized successfully")
     
     def is_available(self) -> bool:
-        """Jina search is always available (basic features work with or without API key)"""
+        """Jina search requires API key to work"""
+        if not self.api_key:
+            return False
         return not self.is_in_cooldown()
     
     async def search(self, query: str, num_results: int = 10) -> List[SearchResult]:
@@ -136,3 +138,10 @@ class JinaSearch(SearchEngine):
             
             data = response.json()
             return data.get('results', [])
+    
+    def get_status(self) -> Dict[str, Any]:
+        """Get Jina engine status with API key information"""
+        status = super().get_status()
+        status["has_api_key"] = bool(self.api_key)
+        status["features"] = "Premium" if self.api_key else "None (API key required)"
+        return status

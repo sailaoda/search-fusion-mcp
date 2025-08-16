@@ -180,7 +180,7 @@ Search Fusion 现在使用**纯MCP环境变量配置**，无需配置文件。
 |---------|----------|----------|------|-------------|
 | Google | `GOOGLE_API_KEY`<br>`GOOGLE_CSE_ID` | 两个都需要 | Google自定义搜索API | [获取API密钥](https://developers.google.com/custom-search/v1/introduction) |
 | Serper | `SERPER_API_KEY` | API密钥 | Serper Google搜索API | [获取API密钥](https://serper.dev/) |
-| Jina AI | `JINA_API_KEY` | 可选 | Jina AI搜索API（有密钥功能更强） | [获取API密钥](https://jina.ai/) |
+| Jina AI | `JINA_API_KEY` | API密钥 | Jina AI搜索API | [获取API密钥](https://jina.ai/) |
 | Bing | `BING_API_KEY` | API密钥 | 微软Bing搜索API | [获取API密钥](https://www.microsoft.com/en-us/bing/apis/bing-web-search-api) |
 | 百度 | `BAIDU_API_KEY`<br>`BAIDU_SECRET_KEY` | 两个都需要 | 百度搜索API | [获取API密钥](https://ai.baidu.com/) |
 | Exa | `EXA_API_KEY` | API密钥 | Exa AI搜索API | [获取API密钥](https://exa.ai/) |

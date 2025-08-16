@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2025-08-16
+
+### 🔧 Fixed - Jina Search Engine Configuration
+- **Jina API Key Requirement**: Fixed issue where Jina search engine was displayed as available even without API key
+- **Proper Engine Filtering**: Jina engine is now only initialized when API key is provided
+- **Accurate Status Reporting**: Engine status now correctly reflects API key availability
+- **Enhanced Engine Status**: Added `has_api_key` and `features` fields to engine status information
+- **Improved Configuration Logic**: Updated configuration manager to properly handle Jina engine enablement
+
+### 🔧 Technical Improvements
+- Updated `JinaSearch.is_available()` to check for API key presence
+- Fixed `ConfigManager.is_engine_enabled()` to require API key for Jina engine
+- Enhanced `SearchManager._initialize_engines()` with proper conditional initialization
+- Added detailed engine status information with API key validation
+- Improved error handling and logging for engine initialization
+
+### 📚 Documentation
+- Updated README.md to reflect Jina API key requirement (changed from "Optional" to "API key")
+- Updated README_zh.md with correct Jina configuration information
+- Clarified API key requirements across all documentation
+
+### 🧪 Testing
+- Verified engine behavior with and without API keys
+- Tested engine availability reporting accuracy
+- Validated proper failover behavior when engines are unavailable
+
 ## [2.0.0] - 2025-08-16
 
 ### 🌐 Added - Enhanced Proxy Auto-Detection

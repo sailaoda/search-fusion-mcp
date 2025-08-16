@@ -70,15 +70,13 @@ class SearchManager:
                 logger.error(f"✗ Serper search engine initialization failed: {e}")
         
         # 3. Jina AI search engine (second priority)
-        jina_config = self.config_manager.get_engine_config('jina')
-        try:
-            self.engines.append(JinaSearch(api_key=jina_config.api_key))
-            if jina_config.api_key:
-                logger.info("✓ Jina AI search engine initialized successfully (advanced features available)")
-            else:
-                logger.info("✓ Jina AI search engine initialized successfully (basic features)")
-        except Exception as e:
-            logger.error(f"✗ Jina AI search engine initialization failed: {e}")
+        if self.config_manager.is_engine_enabled('jina'):
+            jina_config = self.config_manager.get_engine_config('jina')
+            try:
+                self.engines.append(JinaSearch(api_key=jina_config.api_key))
+                logger.info("✓ Jina AI search engine initialized successfully")
+            except Exception as e:
+                logger.error(f"✗ Jina AI search engine initialization failed: {e}")
         
         # 4. DuckDuckGo search (free, always available)
         try:

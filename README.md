@@ -180,7 +180,7 @@ Search Fusion uses **pure MCP environment variable configuration** without requi
 |--------------|---------------------|----------|-------------|-------------|
 | Google | `GOOGLE_API_KEY`<br>`GOOGLE_CSE_ID` | Both needed | Google Custom Search API | [Get API Key](https://developers.google.com/custom-search/v1/introduction) |
 | Serper | `SERPER_API_KEY` | API key | Serper Google Search API | [Get API Key](https://serper.dev/) |
-| Jina AI | `JINA_API_KEY` | Optional | Jina AI Search API (enhanced features with key) | [Get API Key](https://jina.ai/) |
+| Jina AI | `JINA_API_KEY` | API key | Jina AI Search API | [Get API Key](https://jina.ai/) |
 | Bing | `BING_API_KEY` | API key | Microsoft Bing Search API | [Get API Key](https://www.microsoft.com/en-us/bing/apis/bing-web-search-api) |
 | Baidu | `BAIDU_API_KEY`<br>`BAIDU_SECRET_KEY` | Both needed | Baidu Search API | [Get API Key](https://ai.baidu.com/) |
 | Exa | `EXA_API_KEY` | API key | Exa AI Search API | [Get API Key](https://exa.ai/) |

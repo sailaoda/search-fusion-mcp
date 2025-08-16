@@ -46,7 +46,7 @@ class ServerConfig:
     # Search engine configurations
     google: SearchEngineConfig = field(default_factory=SearchEngineConfig)
     serper: SearchEngineConfig = field(default_factory=SearchEngineConfig)  # Same priority as Google
-    jina: SearchEngineConfig = field(default_factory=lambda: SearchEngineConfig(enabled=True))  # Always available
+    jina: SearchEngineConfig = field(default_factory=SearchEngineConfig)
     bing: SearchEngineConfig = field(default_factory=SearchEngineConfig)
     baidu: SearchEngineConfig = field(default_factory=SearchEngineConfig)
     exa: SearchEngineConfig = field(default_factory=SearchEngineConfig)
@@ -137,10 +137,11 @@ class ConfigManager:
         
         # Jina configuration
         jina_api_key = os.getenv('JINA_API_KEY') or os.getenv('JINA_SEARCH_API_KEY')
-        self.config.jina = SearchEngineConfig(
-            api_key=jina_api_key,  # Can be empty
-            enabled=True  # Jina is always enabled
-        )
+        if jina_api_key:
+            self.config.jina = SearchEngineConfig(
+                api_key=jina_api_key,
+                enabled=True
+            )
         
         # Exa configuration
         exa_api_key = os.getenv('EXA_API_KEY') or os.getenv('EXA_SEARCH_API_KEY')
@@ -301,11 +302,11 @@ class ConfigManager:
         """Check if search engine is enabled and has valid configuration"""
         engine_config = self.get_engine_config(engine_name)
         
-        # DuckDuckGo and Jina don't require API keys
-        if engine_name.lower() in ['duckduckgo', 'jina']:
+        # DuckDuckGo doesn't require API key
+        if engine_name.lower() == 'duckduckgo':
             return True
         
-        # Other engines require API keys
+        # All other engines (including Jina) require API keys
         return engine_config.enabled and bool(engine_config.api_key)
     
     def get_proxy_config(self) -> Dict[str, Optional[str]]:
