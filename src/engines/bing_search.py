@@ -48,10 +48,10 @@ class BingSearch(SearchEngine):
                 'safesearch': 'Moderate'
             }
             
-            async with httpx.AsyncClient(timeout=30) as client:
-                response = await client.get(self.base_url, headers=headers, params=params)
-                response.raise_for_status()
-                data = response.json()
+            # Use shared HTTP client for better connection pooling
+            response = await self.http_client.get(self.base_url, headers=headers, params=params)
+            response.raise_for_status()
+            data = response.json()
             
             results = []
             web_pages = data.get('webPages', {}).get('value', [])

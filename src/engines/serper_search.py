@@ -47,14 +47,14 @@ class SerperSearch(SearchEngine):
                 'hl': 'en'   # Default English
             }
             
-            async with httpx.AsyncClient(timeout=30) as client:
-                response = await client.post(
-                    self.base_url,
-                    headers=headers,
-                    json=payload
-                )
-                response.raise_for_status()
-                data = response.json()
+            # Use shared HTTP client for better connection pooling
+            response = await self.http_client.post(
+                self.base_url,
+                headers=headers,
+                json=payload
+            )
+            response.raise_for_status()
+            data = response.json()
             
             results = []
             
