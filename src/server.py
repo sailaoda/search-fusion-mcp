@@ -179,6 +179,63 @@ class SearchFusionServer:
                 self.search_manager = None
                 return False
     
+    async def _handle_search(self, query: str, num_results: int, engine: str) -> str:
+        """Handle search requests with concurrency control"""
+        # Use semaphore to limit concurrent searches
+        async with self._search_semaphore:
+            try:
+                # Ensure search manager is available
+                if not await self._ensure_search_manager():
+                    return self._error_response("Search manager unavailable, please try again later", query, engine)
+                
+                # Execute search with timeout handling
+                start_time = time.time()
+                logger.info(f"🔍 Starting search: query='{query}', engine='{engine}', num_results={num_results}")
+                
+                try:
+                    results = await asyncio.wait_for(
+                        self.search_manager.search(query, num_results, engine),
+                        timeout=60.0  # 60 second timeout
+                    )
+                except asyncio.TimeoutError:
+                    elapsed_time = time.time() - start_time
+                    logger.error(f"⏰ Search timeout after {elapsed_time:.1f}s: query='{query}', engine='{engine}'")
+                    return self._error_response("Search operation timed out", query, engine)
+                
+                elapsed_time = time.time() - start_time
+                
+                # Format response
+                response = {
+                    "query": query,
+                    "engine": engine,
+                    "time_ms": int(elapsed_time * 1000),
+                    "num_results": len(results),
+                    "results": [
+                        {
+                            "title": result.title,
+                            "link": result.link,
+                            "snippet": result.snippet,
+                            "source": result.source,
+                            "metadata": result.metadata
+                        }
+                        for result in results
+                    ],
+                    "timestamp": datetime.now().isoformat(),
+                    "success": True
+                }
+                
+                if results:
+                    logger.success(f"🎯 Search successful: '{query}' ({len(results)} results, {elapsed_time*1000:.0f}ms)")
+                else:
+                    logger.warning(f"⚠️ Search returned no results: '{query}'")
+                    response["message"] = "No results found, try different keywords or search engines"
+                
+                return json.dumps(response, ensure_ascii=False, indent=2)
+                
+            except Exception as e:
+                elapsed_time = time.time() - start_time
+                logger.error(f"❌ Search error after {elapsed_time:.1f}s: {e}")
+                return self._error_response(f"Search failed: {str(e)}", query, engine)
      
     async def _handle_fetch_url(self, url: str, use_jina: bool, with_image_alt: bool, max_length: int, page_number: int) -> str:
         """Handle URL fetching requests with intelligent pagination support"""
