@@ -16,7 +16,7 @@ class SerperSearch(SearchEngine):
     def __init__(self, api_key: str):
         super().__init__()
         self.api_key = api_key
-        self.priority = 1.0  # Same priority as Google
+        self.priority = 0.5  # Highest priority, before Google
         self.rate_limit_cooldown = 60  # 1 minute cooldown
         self.base_url = "https://google.serper.dev/search"
         
