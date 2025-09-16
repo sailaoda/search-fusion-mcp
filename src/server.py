@@ -322,8 +322,10 @@ class SearchFusionServer:
     async def _handle_wikipedia_search(self, entity: str, first_sentences: int) -> str:
         """Handle Wikipedia search requests with async optimization"""
         try:
+            logger.info(f"🔍 Starting Wikipedia search for: {entity}")
             # Use async wrapper for synchronous Wikipedia operations
             page = await asyncio.to_thread(self._get_wikipedia_page, entity)
+            logger.info(f"📄 Successfully retrieved Wikipedia page: {page.title}")
             
             result_parts = [f"Page Title: {page.title}"]
             
@@ -380,8 +382,11 @@ class SearchFusionServer:
             
         except wikipedia.exceptions.PageError:
             try:
-                # Use async wrapper for search
+                # Use async wrapper for search with detailed error handling
+                logger.info(f"🔍 Attempting Wikipedia search for suggestions: {entity}")
                 search_results = await asyncio.to_thread(wikipedia.search, entity, results=5)
+                logger.info(f"📝 Wikipedia search returned {len(search_results) if search_results else 0} suggestions")
+                
                 if search_results:
                     suggestion_list = "\n".join([f"- {result}" for result in search_results[:5]])
                     content = (
@@ -409,16 +414,61 @@ class SearchFusionServer:
                 
                 return json.dumps(result, ensure_ascii=False, indent=2)
                 
+            except (json.JSONDecodeError, ValueError) as json_error:
+                logger.error(f"❌ Wikipedia API returned invalid JSON response: {str(json_error)}")
+                return self._error_response(
+                    f"Wikipedia API returned invalid response format. This usually indicates a temporary service issue. Please try again later.", 
+                    entity, 
+                    "wikipedia"
+                )
             except Exception as search_error:
-                return self._error_response(f"Wikipedia search failed: {str(search_error)}", entity, "wikipedia")
+                error_msg = str(search_error)
+                logger.error(f"❌ Wikipedia search internal error: {type(search_error).__name__}: {error_msg}")
+                
+                # Check if it's a JSON parsing error
+                if "Expecting value" in error_msg and "line 1 column 1" in error_msg:
+                    return self._error_response(
+                        "Wikipedia service returned an empty or invalid response. This is usually a temporary issue with Wikipedia's servers. Please try again in a few moments.",
+                        entity,
+                        "wikipedia"
+                    )
+                else:
+                    return self._error_response(f"Wikipedia search failed: {error_msg}", entity, "wikipedia")
                 
         except Exception as e:
-            logger.error(f"❌ Wikipedia search error: {e}")
-            return self._error_response(f"Wikipedia search failed: {str(e)}", entity, "wikipedia")
+            error_msg = str(e)
+            logger.error(f"❌ Wikipedia search error: {type(e).__name__}: {error_msg}")
+            
+            # Handle specific JSON parsing errors
+            if "Expecting value" in error_msg and "line 1 column 1" in error_msg:
+                return self._error_response(
+                    "Wikipedia service is temporarily unavailable or returned an invalid response. Please try again in a few moments.",
+                    entity,
+                    "wikipedia"
+                )
+            elif "JSONDecodeError" in str(type(e)) or "json" in error_msg.lower():
+                return self._error_response(
+                    "Wikipedia API returned an invalid response format. This is usually a temporary service issue.",
+                    entity,
+                    "wikipedia"
+                )
+            else:
+                return self._error_response(f"Wikipedia search failed: {error_msg}", entity, "wikipedia")
     
     def _get_wikipedia_page(self, entity: str):
-        """Synchronous helper method for getting Wikipedia page"""
-        return wikipedia.page(title=entity, auto_suggest=False)
+        """Synchronous helper method for getting Wikipedia page with retry logic"""
+        max_retries = 2
+        for attempt in range(max_retries + 1):
+            try:
+                return wikipedia.page(title=entity, auto_suggest=False)
+            except Exception as e:
+                error_msg = str(e)
+                if attempt < max_retries and ("Expecting value" in error_msg or "json" in error_msg.lower()):
+                    logger.warning(f"⚠️ Wikipedia page fetch attempt {attempt + 1} failed with JSON error, retrying...")
+                    time.sleep(1)  # Brief delay before retry
+                    continue
+                else:
+                    raise  # Re-raise the exception if max retries reached or not a JSON error
     
     async def _handle_wayback_search(self, url: str, year: int, month: int, day: int) -> str:
         """Handle Wayback Machine search requests"""
@@ -464,7 +514,17 @@ class SearchFusionServer:
             async with httpx.AsyncClient(timeout=30) as client:
                 response = await client.get(base_url, params=params)
                 response.raise_for_status()
-                data = response.json()
+                
+                # Check if response has content before parsing JSON
+                if not response.text or not response.text.strip():
+                    raise ValueError("Archive.org returned empty response")
+                
+                try:
+                    data = response.json()
+                except (json.JSONDecodeError, ValueError) as json_error:
+                    logger.error(f"❌ Archive.org returned invalid JSON: {str(json_error)}")
+                    logger.debug(f"Response content: {response.text[:500]}...")
+                    raise ValueError(f"Archive.org returned invalid JSON response: {str(json_error)}")
             
             if "archived_snapshots" in data and "closest" in data["archived_snapshots"]:
                 closest = data["archived_snapshots"]["closest"]

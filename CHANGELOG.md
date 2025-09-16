@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.6] - 2025-09-16
+
+### 🐛 Wikipedia Search Error Handling Enhancement
+
+**Critical Bug Fixes:**
+- **JSON Parsing Error Resolution**: Fixed "Expecting value: line 1 column 1 (char 0)" error in Wikipedia search
+- **Enhanced Error Handling**: Added specific handling for JSON decode errors from Wikipedia API
+- **Retry Mechanism**: Implemented automatic retry logic for transient Wikipedia API failures
+- **Improved User Experience**: Replaced technical error messages with user-friendly explanations
+
+**Technical Improvements:**
+- **Wikipedia Search Robustness**: Added comprehensive error handling in `_handle_wikipedia_search()`
+- **Wayback Machine Stability**: Enhanced JSON parsing validation for Archive.org API responses
+- **Detailed Logging**: Added debug logging for better error diagnosis and monitoring
+- **Graceful Degradation**: Service continues to work even when Wikipedia API has temporary issues
+
+**Error Handling Enhancements:**
+- Pre-validation of API responses before JSON parsing
+- Automatic retry (up to 2 attempts) for JSON-related errors
+- Specific error messages for different failure scenarios
+- Improved debugging capabilities with detailed error logging
+
+**Benefits:**
+- Eliminates confusing JSON parsing error messages for users
+- Better service reliability during Wikipedia API outages
+- Enhanced debugging and monitoring capabilities
+- Improved overall user experience with clearer error guidance
+
 ## [3.0.5] - 2025-08-26
 
 ### 🔧 Search Engine Priority Optimization

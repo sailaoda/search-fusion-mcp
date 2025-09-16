@@ -25,7 +25,7 @@ def read_requirements():
 
 setup(
     name="search-fusion-mcp",
-    version="3.0.5",
+    version="3.0.6",
     author="sailaoda",
     author_email="wuyesai@gmail.com",
     description="🔍 High-Availability Multi-Engine Search Aggregation MCP Server",
